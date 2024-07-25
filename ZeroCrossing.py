@@ -1,9 +1,12 @@
 #####
+from math import sqrt
+
 import pandas as pd
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy import stats
 from scipy.stats import norm #https://blog.csdn.net/qq_36056219/article/details/112118602
 from scipy.stats import laplace
 
@@ -17,6 +20,9 @@ def rayleigh_distribution(x, sigma):
     :return: 概率密度函数值
     """
     return (x / sigma ** 2) * np.exp(-x ** 2 / (2 * sigma ** 2))
+def clean(serie):
+    output = serie[(np.isnan(serie) == False) & (np.isinf(serie) == False)]
+    return output
 
 type=1; # 1 for up-crossing, 2 for down-crossing
 
@@ -77,7 +83,8 @@ for i in range(1,col-1):
     plt.title('Column '+str(i))
     plt.show()
 
-    Hdata=H/np.mean(H);
+    Hdata=H/np.mean(H)
+    Hdata=clean(Hdata)
     sns.set_palette("hls")
     # sns.set_style("whitegrid")
     plt.figure(dpi=120)
@@ -107,7 +114,37 @@ for i in range(1,col-1):
                      color='#098154',
                      axlabel='H/H mean',  # 设置x轴标题
                      )
+    # sns.kdeplot(Hdata)
+    kde = stats.gaussian_kde(Hdata)
+    plt.hist(Hdata, density=True, alpha=0.5)
+    X_plot = np.linspace(0, 5, 100)# 和上面用到的x一样，划分成100个点
+    plt.plot(X_plot, kde(X_plot), label="kde")
     plt.show()
+    # 原生实现
+    # 衡量线性回归的MSE 、 RMSE、 MAE、r2
+    mse = np.sum((pdf - kde(X_plot)) ** 2) / len(pdf)
+    rmse = sqrt(mse)
+    mae = np.sum(np.absolute(pdf - kde(X_plot))) / len(pdf)
+    r2 = 1 - mse / np.var(pdf)  # 均方误差/方差
+    print("pdf0 mae:", mae, "mse:", mse, " rmse:", rmse, " r2:", r2)
+
+    mse1 = np.sum((pdf1 - kde(X_plot)) ** 2) / len(pdf1)
+    rmse1 = sqrt(mse1)
+    mae1 = np.sum(np.absolute(pdf1 - kde(X_plot))) / len(pdf1)
+    r21 = 1 - mse / np.var(pdf1)  # 均方误差/方差
+    print("pdf1 mae:", mae1, "mse:", mse1, " rmse:", rmse1, " r2:", r21)
+
+    mse2 = np.sum((pdf2 - kde(X_plot)) ** 2) / len(pdf2)
+    rmse2 = sqrt(mse2)
+    mae2 = np.sum(np.absolute(pdf2 - kde(X_plot))) / len(pdf2)
+    r22 = 1 - mse / np.var(pdf2)  # 均方误差/方差
+    print("pdf2 mae:", mae2, "mse:", mse2, " rmse:", rmse2, " r2:", r22)
+
+    mse3 = np.sum((pdf3 - kde(X_plot)) ** 2) / len(pdf3)
+    rmse3 = sqrt(mse3)
+    mae3 = np.sum(np.absolute(pdf3 - kde(X_plot))) / len(pdf3)
+    r23 = 1 - mse / np.var(pdf3)  # 均方误差/方差
+    print("pdf3 mae:", mae3, "mse:", mse3, " rmse:", rmse3, " r2:", r23)
 
     del [dat,flucs,sgn,cross,ind,H,T,Hdata]
 

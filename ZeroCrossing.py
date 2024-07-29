@@ -26,7 +26,7 @@ def clean(serie):
 
 type=1; # 1 for up-crossing, 2 for down-crossing
 
-data=pd.read_excel(r'D:\StudyAndWork\研二\南湖\水体模拟\看代码\WaveParticles\Assets\Scripts\Log\06-20 11data.xlsx'); # First column is sampling time, followed by water level columns
+data=pd.read_excel(r'D:\StudyAndWork\研二\南湖\水体模拟\看代码\WaveParticles\Assets\Scripts\Log\06-20 10data.xlsx'); # First column is sampling time, followed by water level columns
 
 row=np.size(data,0);
 col=np.size(data,1);
@@ -118,33 +118,66 @@ for i in range(1,col-1):
     kde = stats.gaussian_kde(Hdata)
     plt.hist(Hdata, density=True, alpha=0.5)
     X_plot = np.linspace(0, 5, 100)# 和上面用到的x一样，划分成100个点
-    plt.plot(X_plot, kde(X_plot), label="kde")
+    predict = kde(X_plot)
+    plt.plot(X_plot, predict, label="kde")
     plt.show()
     # 原生实现
     # 衡量线性回归的MSE 、 RMSE、 MAE、r2
-    mse = np.sum((pdf - kde(X_plot)) ** 2) / len(pdf)
-    rmse = sqrt(mse)
-    mae = np.sum(np.absolute(pdf - kde(X_plot))) / len(pdf)
-    r2 = 1 - mse / np.var(pdf)  # 均方误差/方差
-    print("pdf0 mae:", mae, "mse:", mse, " rmse:", rmse, " r2:", r2)
 
-    mse1 = np.sum((pdf1 - kde(X_plot)) ** 2) / len(pdf1)
+    mse = np.sum((pdf - predict) ** 2) / len(pdf)
+    rmse = sqrt(mse)
+    mae = np.sum(np.absolute(pdf - predict)) / len(pdf)
+    mape = 0
+    count = 0
+    for i in range(len(pdf)):
+        if pdf[i] != 0:
+            mape += np.absolute((pdf[i] - predict[i]) / pdf[i])
+            count = count + 1
+    mape = mape / count
+    r2 = 1 - mse / np.var(pdf)  # 均方误差/方差
+    print("pdf0 mae:", mae, "mse:", mse, " rmse:", rmse, " r2:", r2 , " mape:", mape)
+
+    mse1 = np.sum((pdf1 - predict) ** 2) / len(pdf1)
     rmse1 = sqrt(mse1)
-    mae1 = np.sum(np.absolute(pdf1 - kde(X_plot))) / len(pdf1)
+    mae1 = np.sum(np.absolute(pdf1 - predict)) / len(pdf1)
+    # mape1 = np.sum(np.absolute((pdf1 - predict) / pdf1)) / len(pdf1)
+    mape1 = 0
+    # MAPE1 = np.zeros_like(pdf1)
+    count=0
+    for i in range(len(pdf1)):
+        if pdf1[i] != 0:
+            mape1+=np.absolute((pdf1[i] - predict[i]) / pdf1[i])
+            # MAPE1[i] = np.sum(np.absolute((pdf1[i] - predict[i]) / pdf1[i])) / len(pdf1)
+            count=count+1
+    mape1=mape1/count
     r21 = 1 - mse / np.var(pdf1)  # 均方误差/方差
-    print("pdf1 mae:", mae1, "mse:", mse1, " rmse:", rmse1, " r2:", r21)
+    print("pdf1 mae:", mae1, "mse:", mse1, " rmse:", rmse1, " r2:", r21, " mape:", mape1)
 
     mse2 = np.sum((pdf2 - kde(X_plot)) ** 2) / len(pdf2)
     rmse2 = sqrt(mse2)
     mae2 = np.sum(np.absolute(pdf2 - kde(X_plot))) / len(pdf2)
+    mape2 = 0
+    count = 0
+    for i in range(len(pdf2)):
+        if pdf[i] != 0:
+            mape2 += np.absolute((pdf2[i] - predict[i]) / pdf2[i])
+            count = count + 1
+    mape2 = mape2 / count
     r22 = 1 - mse / np.var(pdf2)  # 均方误差/方差
-    print("pdf2 mae:", mae2, "mse:", mse2, " rmse:", rmse2, " r2:", r22)
+    print("pdf2 mae:", mae2, "mse:", mse2, " rmse:", rmse2, " r2:", r22, " mape:", mape2)
 
     mse3 = np.sum((pdf3 - kde(X_plot)) ** 2) / len(pdf3)
     rmse3 = sqrt(mse3)
     mae3 = np.sum(np.absolute(pdf3 - kde(X_plot))) / len(pdf3)
+    mape3 = 0
+    count = 0
+    for i in range(len(pdf3)):
+        if pdf3[i] != 0:
+            mape3 += np.absolute((pdf3[i] - predict[i]) / pdf3[i])
+            count = count + 1
+    mape3 = mape3 / count
     r23 = 1 - mse / np.var(pdf3)  # 均方误差/方差
-    print("pdf3 mae:", mae3, "mse:", mse3, " rmse:", rmse3, " r2:", r23)
+    print("pdf3 mae:", mae3, "mse:", mse3, " rmse:", rmse3, " r2:", r23, " mape:", mape3)
 
     del [dat,flucs,sgn,cross,ind,H,T,Hdata]
 

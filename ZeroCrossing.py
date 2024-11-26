@@ -31,7 +31,7 @@ def clean(serie):
 type = 1;  # 1 for up-crossing, 2 for down-crossing
 
 data = pd.read_excel(
-    r'D:\StudyAndWork\研二\南湖\水体模拟\看代码\WaveParticles\Assets\Scripts\Log\08-08 22 02data.xlsx');  # First column is sampling time, followed by water level columns
+    r'D:\StudyAndWork\研二\南湖\水体模拟\看代码\WaveParticles\Assets\Scripts\Log\11-04 14 30data.xlsx');  # First column is sampling time, followed by water level columns
 
 row = np.size(data, 0);
 col = np.size(data, 1);
@@ -82,7 +82,7 @@ for i in range(1, col - 1):
     np.savetxt('Column' + str(i) + '.txt', out, header='(H,T)')
     # print(H)
     plt.plot(H)
-    plt.ylabel('H (m)')
+    plt.ylabel('Height (m)')
     plt.xlabel('Wave no.')
     plt.title('Column ' + str(i))
     plt.show()
@@ -92,7 +92,7 @@ for i in range(1, col - 1):
     sns.set_palette("hls")
     # sns.set_style("whitegrid")
     plt.figure(dpi=120)
-    sigma = [0.7, 0.75, 0.8,0.85, 0.9]
+    sigma = [0.7, 0.75, 0.8, 0.85, 0.9]
     x = np.linspace(0, 5, 100)
     # 计算概率密度函数值
     pdf = rayleigh_distribution(x, sigma[0])
@@ -101,31 +101,34 @@ for i in range(1, col - 1):
     pdf3 = rayleigh_distribution(x, sigma[3])
     pdf4 = rayleigh_distribution(x, sigma[4])
     # 绘制概率密度函数图
-    plt.plot(x, pdf, label="a=0.7")
-    plt.plot(x, pdf1, label='a=0.75')
-    plt.plot(x, pdf2, label='a=0.8')
-    plt.plot(x, pdf3, label='a=0.85')
-    plt.plot(x, pdf4, label='a=0.9')
-    plt.legend()
+    # plt.plot(x, pdf, label="a=0.7")
+    # plt.plot(x, pdf1, label='a=0.75')
+    # plt.plot(x, pdf2, label='a=0.8')
+    plt.plot(x, pdf3, label='Rayleigh distribution',color='#fa0807')
+    # plt.plot(x, pdf4, label='a=0.9')
+
 
     sns.set(style='dark')
     sns.set_style("dark", {"axes.facecolor": "#e9f3ea"})
-    g = sns.distplot(Hdata,
-                     hist=True,
-                     kde=True,  # 开启核密度曲线kernel density estimate (KDE)
-                     kde_kws={'linestyle': '--', 'linewidth': '1', 'color': '#c72e29',
-                              # 设置外框线属性
-                              },
-                     # fit=norm,
-                     color='#098154',
-                     axlabel='H/H mean',  # 设置x轴标题
-                     )
+    # g = sns.distplot(Hdata,
+    #                  hist=True,
+    #                  # kde=True,  # 开启核密度曲线kernel density estimate (KDE)
+    #                  # kde_kws={'linestyle': '--', 'linewidth': '1', 'color': '#c72e29',
+    #                  #          # 设置外框线属性
+    #                  #          },
+    #                  # # fit=norm,
+    #                  color='#098154',
+    #                  axlabel='H/H mean',  # 设置x轴标题
+    #                  )
     # sns.kdeplot(Hdata)
     kde = stats.gaussian_kde(Hdata)
-    # plt.hist(Hdata, density=True, alpha=0.5)
+    plt.hist(Hdata, density=True,color='#66a9d6')#
+    plt.ylabel('Probability density')
+    plt.xlabel('$H$/$\overline{H}$')
     X_plot = np.linspace(0, 5, 100)  # 和上面用到的x一样，划分成100个点
     predict = kde(X_plot)
-    plt.plot(X_plot, predict, label="kde")
+    plt.plot(X_plot, predict, label="Simulated result",color='#098154', linestyle='--')
+    plt.legend()
     plt.show()
     # 原生实现
     # 衡量线性回归的MSE 、 RMSE、 MAE、r2
@@ -139,12 +142,12 @@ for i in range(1, col - 1):
     for i in range(len(pdf)):
         if pdf[i] != 0:
             mape += np.absolute((pdf[i] - predict[i]) / pdf[i])
-            smape += np.absolute((pdf[i] - predict[i]) / ( (pdf[i] + predict[i]) / 2 ) )
+            smape += np.absolute((pdf[i] - predict[i]) / ((pdf[i] + predict[i]) / 2))
             count = count + 1
     mape = mape / count
-    smape =smape /count
+    smape = smape / count
     r2 = 1 - mse / np.var(pdf)  # 均方误差/方差
-    print("pdf0 mae:", mae, "mse:", mse, " rmse:", rmse, " r2:", r2, " mape:", mape,"smape:", smape)
+    print("pdf0 mae:", mae, "mse:", mse, " rmse:", rmse, " r2:", r2, " mape:", mape, "smape:", smape)
 
     mse1 = np.sum((pdf1 - predict) ** 2) / len(pdf1)
     rmse1 = sqrt(mse1)
@@ -161,9 +164,9 @@ for i in range(1, col - 1):
             smape1 += np.absolute((pdf1[i] - predict[i]) / ((pdf1[i] + predict[i]) / 2))
             count = count + 1
     mape1 = mape1 / count
-    smape =smape /count
-    r21 = 1 - mse / np.var(pdf1)  # 均方误差/方差
-    print("pdf1 mae:", mae1, "mse:", mse1, " rmse:", rmse1, " r2:", r21, " mape:", mape1,"smape:", smape1)
+    smape1 = smape1 / count
+    r21 = 1 - mse1 / np.var(pdf1)  # 均方误差/方差
+    print("pdf1 mae:", mae1, "mse:", mse1, " rmse:", rmse1, " r2:", r21, " mape:", mape1, "smape:", smape1)
 
     mse2 = np.sum((pdf2 - kde(X_plot)) ** 2) / len(pdf2)
     rmse2 = sqrt(mse2)
@@ -177,8 +180,9 @@ for i in range(1, col - 1):
             smape2 += np.absolute((pdf2[i] - predict[i]) / ((pdf2[i] + predict[i]) / 2))
             count = count + 1
     mape2 = mape2 / count
-    r22 = 1 - mse / np.var(pdf2)  # 均方误差/方差
-    print("pdf2 mae:", mae2, "mse:", mse2, " rmse:", rmse2, " r2:", r22, " mape:", mape2 ,"smape:", smape2)
+    smape2 = smape2 / count
+    r22 = 1 - mse2 / np.var(pdf2)  # 均方误差/方差
+    print("pdf2 mae:", mae2, "mse:", mse2, " rmse:", rmse2, " r2:", r22, " mape:", mape2, "smape:", smape2)
 
     mse3 = np.sum((pdf3 - kde(X_plot)) ** 2) / len(pdf3)
     rmse3 = sqrt(mse3)
@@ -192,8 +196,9 @@ for i in range(1, col - 1):
             smape3 += np.absolute((pdf3[i] - predict[i]) / ((pdf3[i] + predict[i]) / 2))
             count = count + 1
     mape3 = mape3 / count
-    r23 = 1 - mse / np.var(pdf3)  # 均方误差/方差
-    print("pdf3 mae:", mae3, "mse:", mse3, " rmse:", rmse3, " r2:", r23, " mape:", mape3 ,"smape:", smape3)
+    smape3 = smape3 / count
+    r23 = 1 - mse3 / np.var(pdf3)  # 均方误差/方差
+    print("pdf3 mae:", mae3, "mse:", mse3, " rmse:", rmse3, " r2:", r23, " mape:", mape3, "smape:", smape3)
 
     mse4 = np.sum((pdf4 - kde(X_plot)) ** 2) / len(pdf4)
     rmse4 = sqrt(mse4)
@@ -207,7 +212,8 @@ for i in range(1, col - 1):
             smape4 += np.absolute((pdf4[i] - predict[i]) / ((pdf4[i] + predict[i]) / 2))
             count = count + 1
     mape4 = mape4 / count
-    r24 = 1 - mse / np.var(pdf4)  # 均方误差/方差
-    print("pdf3 mae:", mae4, "mse:", mse4, " rmse:", rmse4, " r2:", r24, " mape:", mape4,"smape:", smape4)
+    smape4 = smape4 / count
+    r24 = 1 - mse4 / np.var(pdf4)  # 均方误差/方差
+    print("pdf3 mae:", mae4, "mse:", mse4, " rmse:", rmse4, " r2:", r24, " mape:", mape4, "smape:", smape4)
 
     del [dat, flucs, sgn, cross, ind, H, T, Hdata]
